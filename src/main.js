@@ -1,11 +1,15 @@
 const roomIdElement = document.querySelector('#roomId');
 const deviceHint = document.querySelector('#deviceHint');
 const connectionState = document.querySelector('#connectionState');
+const installHint = document.querySelector('#installHint');
+const installButton = document.querySelector('#installButton');
 const sourceLanguage = document.querySelector('#sourceLanguage');
 const targetLanguage = document.querySelector('#targetLanguage');
 const microphoneSelect = document.querySelector('#microphoneSelect');
 const speakerSelect = document.querySelector('#speakerSelect');
 const refreshDevices = document.querySelector('#refreshDevices');
+const manualText = document.querySelector('#manualText');
+const translateTypedButton = document.querySelector('#translateTypedButton');
 const volumeFill = document.querySelector('#volumeFill');
 const volumeLabel = document.querySelector('#volumeLabel');
 const startButton = document.querySelector('#startButton');
@@ -28,6 +32,10 @@ let microphoneStream;
 let meterAnimation;
 let isRunning = false;
 let listenEnabled = true;
+let deferredInstallPrompt;
+
+const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
 function createRoomId() {
   const fromUrl = new URLSearchParams(window.location.search).get('room');
@@ -38,13 +46,33 @@ function createRoomId() {
 }
 
 function updateDeviceHint() {
-  const isiPhone = /iPhone|iPod/.test(navigator.userAgent);
   const supportsSpeech = Boolean(SpeechRecognition);
-  deviceHint.textContent = isiPhone
-    ? 'iPhone detected: guided room-mic flow enabled'
+  if (!window.isSecureContext) {
+    deviceHint.textContent = 'Open from HTTPS or localhost so iPhone can allow microphone access';
+    return;
+  }
+
+  deviceHint.textContent = isIos
+    ? 'iPhone detected: standalone one-device flow enabled'
     : supportsSpeech
       ? 'Live browser speech recognition ready'
-      : 'Speech recognition unavailable: type text below or use Chrome/Safari';
+      : 'Speech recognition unavailable: use the typed-text fallback below';
+}
+
+function updateInstallUi() {
+  if (isStandalone) {
+    installHint.textContent = 'Running as an installed iPhone app. Everything happens on this device.';
+    installButton.hidden = true;
+    return;
+  }
+
+  if (isIos) {
+    installHint.textContent = 'On iPhone: tap Share, choose Add to Home Screen, then open Babelfish from the Home Screen.';
+    installButton.textContent = 'How to install';
+    return;
+  }
+
+  installHint.textContent = 'Install this standalone web app and use one-device translation without a second phone.';
 }
 
 function setStatus(message) {
@@ -84,6 +112,10 @@ async function populateDevices() {
 }
 
 async function ensureMicrophone() {
+  if (!window.isSecureContext) {
+    throw new Error('Microphone access requires HTTPS or localhost. Install/open the app from an HTTPS address on iPhone.');
+  }
+
   if (microphoneStream) return microphoneStream;
   const selectedDevice = microphoneSelect.value;
   microphoneStream = await navigator.mediaDevices.getUserMedia({
@@ -113,6 +145,14 @@ function startMeter(stream) {
 
   cancelAnimationFrame(meterAnimation);
   render();
+}
+
+function stopMicrophone() {
+  microphoneStream?.getTracks().forEach((track) => track.stop());
+  microphoneStream = undefined;
+  cancelAnimationFrame(meterAnimation);
+  volumeFill.style.width = '2%';
+  volumeLabel.textContent = 'quiet';
 }
 
 function buildRecognition() {
@@ -156,12 +196,34 @@ async function translateText(text) {
     const data = await response.json();
     const translated = data.responseData?.translatedText || 'No translation returned.';
     translatedTranscript.textContent = translated;
+    manualText.value = text;
     speak(translated);
     setStatus('Translated successfully. Keep speaking for live updates.');
   } catch (error) {
+    const fallback = offlinePhrasebook(text);
+    if (fallback) {
+      translatedTranscript.textContent = fallback;
+      speak(fallback);
+      setStatus('Translation service unavailable, so a built-in phrasebook result is shown.');
+      return;
+    }
+
     translatedTranscript.textContent = 'Translation failed. Please check your connection and try again.';
-    setStatus(error.message);
+    setStatus(navigator.onLine ? error.message : 'Offline: connect to the internet or try a built-in phrasebook sentence.');
   }
+}
+
+function offlinePhrasebook(text) {
+  const normalized = text.trim().toLowerCase().replace(/[?.!]/g, '');
+  const dictionary = {
+    'hello': { th: 'สวัสดี', en: 'Hello' },
+    'hello how are you': { th: 'สวัสดี คุณเป็นอย่างไรบ้าง', en: 'Hello, how are you?' },
+    'thank you': { th: 'ขอบคุณ', en: 'Thank you' },
+    'where is the bathroom': { th: 'ห้องน้ำอยู่ที่ไหน', en: 'Where is the bathroom?' },
+    'how much is this': { th: 'อันนี้ราคาเท่าไหร่', en: 'How much is this?' },
+    'i need help': { th: 'ฉันต้องการความช่วยเหลือ', en: 'I need help' },
+  };
+  return dictionary[normalized]?.[targetLanguage.value];
 }
 
 function speak(text) {
@@ -194,6 +256,7 @@ async function startListening() {
 function stopListening(updateStatus = true) {
   isRunning = false;
   recognition?.stop();
+  stopMicrophone();
   window.speechSynthesis?.cancel();
   startButton.textContent = 'Start';
   startButton.classList.remove('danger');
@@ -203,8 +266,42 @@ function stopListening(updateStatus = true) {
 async function copyRoomLink() {
   const link = new URL(window.location.href);
   link.searchParams.set('room', roomIdElement.textContent);
-  await navigator.clipboard.writeText(link.toString());
-  setStatus('Room link copied to clipboard. Share it with another listener.');
+  const text = link.toString();
+
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    setStatus('App link copied. You can save it, but one-iPhone mode does not require another device.');
+    return;
+  }
+
+  window.prompt('Copy this app link:', text);
+  setStatus('Copy the shown app link if you want to save it.');
+}
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    await navigator.serviceWorker.register('/sw.js');
+  } catch (error) {
+    console.info('Service worker registration skipped:', error);
+  }
+}
+
+async function installApp() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = undefined;
+    updateInstallUi();
+    return;
+  }
+
+  if (isIos) {
+    setStatus('iPhone install: tap Share → Add to Home Screen → Add, then open Babelfish from Home Screen.');
+    return;
+  }
+
+  setStatus('If your browser supports installation, use its install button in the address bar/menu.');
 }
 
 modeButtons.forEach((button) => {
@@ -232,6 +329,16 @@ startButton.addEventListener('click', () => {
 });
 
 copyLinkButton.addEventListener('click', copyRoomLink);
+installButton.addEventListener('click', installApp);
+translateTypedButton.addEventListener('click', () => {
+  const text = manualText.value.trim();
+  if (!text) {
+    setStatus('Type text first, then press Translate typed text.');
+    return;
+  }
+  sourceTranscript.textContent = text;
+  translateText(text);
+});
 refreshDevices.addEventListener('click', populateDevices);
 sourceLanguage.addEventListener('change', () => {
   updateLanguageTitles();
@@ -241,8 +348,16 @@ sourceLanguage.addEventListener('change', () => {
   }
 });
 targetLanguage.addEventListener('change', updateLanguageTitles);
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installButton.hidden = false;
+  updateInstallUi();
+});
 
 roomIdElement.textContent = createRoomId();
 updateDeviceHint();
+updateInstallUi();
+registerServiceWorker();
 updateLanguageTitles();
 populateDevices().catch(() => setStatus('Device list will appear after microphone permission is granted.'));

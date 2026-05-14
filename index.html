@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f4fbfb" />
+    <meta name="theme-color" content="#2184c9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Babelfish" />
     <title>Babelfish Live</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/assets/icon.svg" />
+    <link rel="icon" href="/assets/icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
@@ -14,9 +20,23 @@
         <p id="deviceHint">Checking device capabilities...</p>
       </header>
 
-      <section class="room-card" aria-label="Room details">
-        <span>Room</span>
-        <strong id="roomId">--------</strong>
+      <section class="room-card" aria-label="App mode and room details">
+        <div>
+          <span>Mode</span>
+          <strong>One iPhone</strong>
+        </div>
+        <div>
+          <span>Local room</span>
+          <strong id="roomId">--------</strong>
+        </div>
+      </section>
+
+      <section class="install-card" aria-label="Install app on iPhone">
+        <div>
+          <strong>iPhone app mode</strong>
+          <span id="installHint">Install to Home Screen and use this iPhone only — no second phone, computer, or listener device required.</span>
+        </div>
+        <button id="installButton" class="install-button" type="button">Install app</button>
       </section>
 
       <section class="panel controls-panel" aria-label="One-device translation controls">
@@ -75,6 +95,12 @@
           <button id="refreshDevices" class="secondary-wide" type="button">Refresh devices</button>
         </form>
 
+        <div class="manual-entry">
+          <label for="manualText">Manual text fallback</label>
+          <textarea id="manualText" rows="3" placeholder="If iPhone speech recognition is unavailable, type or paste speech here."></textarea>
+          <button id="translateTypedButton" class="secondary-wide" type="button">Translate typed text</button>
+        </div>
+
         <div class="meter-header">
           <span>Room input</span>
           <span id="volumeLabel">quiet</span>
@@ -100,7 +126,7 @@
       </section>
 
       <p id="statusMessage" class="status-message" role="status">
-        Press Start, allow microphone access, and speak to translate live.
+        Press Start, allow microphone access, and speak to translate live on this iPhone.
       </p>
     </main>
 

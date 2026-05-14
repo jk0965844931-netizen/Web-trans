@@ -48,6 +48,7 @@ select {
 }
 
 .room-card,
+.install-card,
 .panel {
   border: 1px solid #d9dee5;
   border-radius: 18px;
@@ -57,13 +58,60 @@ select {
 
 .room-card {
   display: grid;
-  gap: 6px;
-  margin-bottom: 36px;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 18px;
   padding: 24px 30px;
+}
+
+.room-card div {
+  display: grid;
+  gap: 6px;
+}
+
+.install-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 36px;
+  padding: 18px 22px;
+}
+
+.install-card div {
+  display: grid;
+  gap: 4px;
+}
+
+.install-card strong {
+  font-size: clamp(1.1rem, 4vw, 1.45rem);
+}
+
+.install-card span {
+  color: #5f6b7a;
+  font-size: clamp(0.95rem, 3.5vw, 1.15rem);
+  line-height: 1.35;
+}
+
+.install-button {
+  flex: 0 0 auto;
+  min-height: 46px;
+  border: 1px solid #1d7fc6;
+  border-radius: 999px;
+  background: #eaf6ff;
+  color: #17698f;
+  cursor: pointer;
+  padding: 0 18px;
+  font-weight: 800;
+}
+
+.install-button[hidden] {
+  display: none;
 }
 
 .room-card span,
 .device-form label,
+.manual-entry label,
 .help-text,
 .meter-header,
 .status-message {
@@ -72,6 +120,7 @@ select {
 
 .room-card span,
 .device-form label,
+.manual-entry label,
 .meter-header {
   font-size: clamp(1.2rem, 4vw, 1.7rem);
 }
@@ -147,12 +196,18 @@ select {
   line-height: 1.35;
 }
 
-.device-form {
+.device-form,
+.manual-entry {
   display: grid;
   gap: 12px;
 }
 
-.device-form select {
+.manual-entry {
+  margin-bottom: 22px;
+}
+
+.device-form select,
+.manual-entry textarea {
   width: 100%;
   min-height: 52px;
   border: 1px solid #d7dbe0;
@@ -161,6 +216,13 @@ select {
   padding: 0 18px;
   color: #111827;
   font-size: clamp(1.05rem, 4vw, 1.45rem);
+}
+
+.manual-entry textarea {
+  min-height: 104px;
+  padding: 14px 18px;
+  line-height: 1.35;
+  resize: vertical;
 }
 
 .secondary-wide {
@@ -234,9 +296,15 @@ select {
     padding-inline: 16px;
   }
 
+  .room-card,
+  .install-card,
   .panel-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+ข  .room-card {
+    grid-template-columns: 1fr;
   }
 
   .segmented-grid,
