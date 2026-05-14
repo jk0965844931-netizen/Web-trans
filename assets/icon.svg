@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Babelfish app icon">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="64" x2="432" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35a7d8"/>
+      <stop offset="1" stop-color="#1267c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M129 268c0-80 64-144 143-144h64c26 0 47 21 47 47v111c0 80-64 144-143 144h-64c-26 0-47-21-47-47V268Z" fill="#fff" opacity=".95"/>
+  <path d="M169 278c0-51 42-93 93-93h48c14 0 25 11 25 25v69c0 51-42 93-93 93h-48c-14 0-25-11-25-25v-69Z" fill="#e8f6ff"/>
+  <circle cx="224" cy="271" r="21" fill="#1267c7"/>
+  <circle cx="291" cy="271" r="21" fill="#1267c7"/>
+  <path d="M216 329c25 20 62 20 87 0" fill="none" stroke="#1267c7" stroke-width="22" stroke-linecap="round"/>
+  <path d="M118 156h64M118 206h37M354 336h64M354 386h37" stroke="#fff" stroke-width="24" stroke-linecap="round" opacity=".9"/>
+</svg>
