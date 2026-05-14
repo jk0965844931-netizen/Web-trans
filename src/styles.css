@@ -303,7 +303,7 @@ select {
     flex-direction: column;
   }
 
-  .room-card {
+ข  .room-card {
     grid-template-columns: 1fr;
   }
 
