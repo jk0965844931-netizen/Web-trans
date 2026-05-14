@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4fbfb" />
+    <title>Babelfish Live</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <h1>Babelfish Live</h1>
+        <p id="deviceHint">Checking device capabilities...</p>
+      </header>
+
+      <section class="room-card" aria-label="Room details">
+        <span>Room</span>
+        <strong id="roomId">--------</strong>
+      </section>
+
+      <section class="panel controls-panel" aria-label="One-device translation controls">
+        <div class="panel-heading">
+          <h2>One-device translation</h2>
+          <span id="connectionState">1 device connected</span>
+        </div>
+
+        <div class="segmented-grid" role="group" aria-label="Translation mode">
+          <button class="mode-button active" data-mode="auto" type="button">Auto</button>
+          <button class="mode-button" data-mode="one-device" type="button">One device</button>
+          <button id="captureButton" class="mode-button" type="button">Capture mic</button>
+          <button id="listenButton" class="mode-button" type="button">Listen</button>
+        </div>
+
+        <p class="help-text">
+          iPhone flow: use AirPods for playback, place the phone near the room speaker, and use Standard or Wide
+          Spectrum mic mode. One-device mode captures and plays on this device.
+        </p>
+
+        <form class="device-form">
+          <label for="sourceLanguage">Speak language</label>
+          <select id="sourceLanguage">
+            <option value="en" selected>English</option>
+            <option value="th">Thai</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="zh-CN">Chinese</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+          </select>
+
+          <label for="targetLanguage">Translate to</label>
+          <select id="targetLanguage">
+            <option value="th" selected>Thai</option>
+            <option value="en">English</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="zh-CN">Chinese</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+          </select>
+
+          <label for="microphoneSelect">Microphone</label>
+          <select id="microphoneSelect">
+            <option>Default microphone</option>
+          </select>
+
+          <label for="speakerSelect">Audio output</label>
+          <select id="speakerSelect">
+            <option>Default speaker</option>
+          </select>
+
+          <button id="refreshDevices" class="secondary-wide" type="button">Refresh devices</button>
+        </form>
+
+        <div class="meter-header">
+          <span>Room input</span>
+          <span id="volumeLabel">quiet</span>
+        </div>
+        <div class="volume-track" aria-hidden="true">
+          <div id="volumeFill" class="volume-fill"></div>
+        </div>
+
+        <div class="action-row">
+          <button id="startButton" class="primary" type="button">Start</button>
+          <button id="copyLinkButton" class="secondary" type="button">Copy room link</button>
+        </div>
+      </section>
+
+      <section class="panel transcript-panel" aria-live="polite">
+        <div class="language-title" id="sourceTitle">English</div>
+        <p id="sourceTranscript" class="large-copy">Hello, how are you?</p>
+      </section>
+
+      <section class="panel transcript-panel translated" aria-live="polite">
+        <div class="language-title" id="targetTitle">Thai</div>
+        <p id="translatedTranscript" class="large-copy">สวัสดี คุณเป็นอย่างไรบ้าง?</p>
+      </section>
+
+      <p id="statusMessage" class="status-message" role="status">
+        Press Start, allow microphone access, and speak to translate live.
+      </p>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
