@@ -11,6 +11,41 @@ npm run start
 
 Open <http://localhost:5173>, allow microphone access, choose the speaking and target languages, then press **Start**.
 
+
+## วิธีทำให้เป็นเว็บไซต์จริง
+
+เว็บนี้เป็น static website/PWA จึง deploy ได้กับ hosting ที่รองรับไฟล์ HTML, CSS, JavaScript ธรรมดา โดยไม่ต้องมี backend server.
+
+### 1. สร้างไฟล์สำหรับ deploy
+
+```bash
+npm install
+npm run build
+```
+
+คำสั่งนี้จะสร้างโฟลเดอร์ `dist/` ที่รวมไฟล์เว็บทั้งหมดไว้แล้ว เช่น `index.html`, `src/`, `assets/`, `manifest.webmanifest` และ `sw.js`.
+
+### 2. เลือก hosting
+
+เลือกอย่างใดอย่างหนึ่ง:
+
+- **Netlify**: ลากโฟลเดอร์ `dist/` ไปวางในหน้า Deploy ของ Netlify หรือเชื่อม Git repo แล้วตั้ง publish directory เป็น `dist`.
+- **Vercel**: Import Git repo แล้วตั้ง build command เป็น `npm run build` และ output directory เป็น `dist`.
+- **GitHub Pages**: รัน `npm run build` แล้วนำไฟล์ใน `dist/` ไป publish ผ่าน GitHub Pages หรือ GitHub Actions.
+- **Static hosting อื่นๆ**: อัปโหลดไฟล์ทั้งหมดใน `dist/` ไปยัง public web root ของ hosting.
+
+### 3. ต้องใช้ HTTPS
+
+สำหรับ iPhone และ browser สมัยใหม่ การใช้ไมโครโฟนและ service worker ต้องเปิดผ่าน `https://` เท่านั้น ยกเว้นตอนทดสอบบน `localhost`. Hosting อย่าง Netlify, Vercel และ GitHub Pages จะมี HTTPS ให้อัตโนมัติ.
+
+### 4. ทดสอบหลัง deploy
+
+1. เปิด URL เว็บไซต์ที่เป็น `https://`.
+2. ตรวจว่าหน้าเว็บโหลดได้ และไม่มี 404 สำหรับ `manifest.webmanifest`, `sw.js`, `/src/main.js`, `/src/styles.css`, และ `/assets/icon.svg`.
+3. เปิดบน iPhone Safari แล้วทำตามขั้นตอน **Share → Add to Home Screen**.
+4. เปิดจาก Home Screen, กด **Capture mic** หรือ **Start**, แล้วอนุญาตไมโครโฟน.
+5. ถ้าแปลไม่ได้ ให้ตรวจอินเทอร์เน็ตและดูว่า hosting ไม่ได้บล็อก request ไปยัง MyMemory translation API.
+
 ## Use on iPhone as an app
 
 1. Deploy or open the site from an HTTPS address. iPhone microphone access requires HTTPS unless you are on `localhost`.

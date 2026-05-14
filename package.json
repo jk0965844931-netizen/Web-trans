@@ -6,6 +6,8 @@
   "scripts": {
     "start": "python3 -m http.server 5173",
     "dev": "python3 -m http.server 5173",
-    "check": "node --check src/main.js"
-  }
+    "check": "node --check src/main.js",
+    "build": "node scripts/build.js"
+  },
+  "type": "module"
 }
